@@ -1,0 +1,9 @@
+[submodule "courier-track-be"]
+	path = courier-track-be
+	url = https://github.com/AkishaQB/courier-track-be.git
+[submodule "courier-collection-fe"]
+	path = courier-collection-fe
+	url = https://github.com/AkishaQB/courier-collection-fe.git
+[submodule "courier-logistics-be"]
+	path = courier-logistics-be
+	url = https://github.com/AkishaQB/courier-logistics-be.git

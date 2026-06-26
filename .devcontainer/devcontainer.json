@@ -1,0 +1,40 @@
+// For customization, see https://containers.dev/implementors/json_reference/
+{
+  "name": "AK Logistics - Full Stack",
+
+  // Point to the root-level docker-compose
+  "dockerComposeFile": "../docker-compose.yml",
+
+  // Use any service as the "workspace" anchor — postgres is lightweight.
+  // We don't develop inside the container; we just need the DBs running.
+  "service": "courier-track-db",
+
+  // Forward both Postgres ports to your host
+  "forwardPorts": [5433, 5435],
+
+  // Labels for the VS Code Ports panel
+  "portsAttributes": {
+    "5433": {
+      "label": "PostgreSQL – courier-track-be",
+      "onAutoForward": "silent"
+    },
+    "5435": {
+      "label": "PostgreSQL – courier-logistics-be",
+      "onAutoForward": "silent"
+    }
+  },
+
+  // Run after container is created
+  "postCreateCommand": "echo '✅ courier-track-db on localhost:5433 | courier-logistics-db on localhost:5435'",
+
+  // VS Code extensions installed in every workspace opened with this devcontainer
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Prisma.prisma",
+        "ms-azuretools.vscode-docker",
+        "ckolkman.vscode-postgres"
+      ]
+    }
+  }
+}

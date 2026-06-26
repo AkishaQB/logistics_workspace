@@ -1,0 +1,42 @@
+services:
+  # ─── Stage 1: Courier Track / Collection ────────────────────────────────────
+  courier-track-db:
+    image: postgres:16-alpine
+    container_name: ak-courier-track-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: aklogistics
+      POSTGRES_PASSWORD: aklogistics
+      POSTGRES_DB: courier_collection_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - courier_track_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aklogistics -d courier_collection_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Stage 2: Courier Logistics BE ──────────────────────────────────────────
+  courier-logistics-db:
+    image: postgres:16-alpine
+    container_name: ak-courier-logistics-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: aklogistics
+      POSTGRES_PASSWORD: aklogistics
+      POSTGRES_DB: courier_logistics_db
+    ports:
+      - "5435:5432"
+    volumes:
+      - courier_logistics_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aklogistics -d courier_logistics_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  courier_track_pgdata:
+  courier_logistics_pgdata:
