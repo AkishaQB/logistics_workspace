@@ -1,0 +1,4 @@
+# ─── Secret files — never commit ─────────────────────────────────────────────
+.env
+.env.*
+!.env.example

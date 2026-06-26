@@ -5,15 +5,15 @@ services:
     container_name: ak-courier-track-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: aklogistics
-      POSTGRES_PASSWORD: aklogistics
-      POSTGRES_DB: courier_collection_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB_TRACK}
     ports:
       - "5433:5432"
     volumes:
       - courier_track_pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U aklogistics -d courier_collection_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB_TRACK}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -24,15 +24,15 @@ services:
     container_name: ak-courier-logistics-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: aklogistics
-      POSTGRES_PASSWORD: aklogistics
-      POSTGRES_DB: courier_logistics_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB_LOGISTICS}
     ports:
       - "5435:5432"
     volumes:
       - courier_logistics_pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U aklogistics -d courier_logistics_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB_LOGISTICS}"]
       interval: 10s
       timeout: 5s
       retries: 5
