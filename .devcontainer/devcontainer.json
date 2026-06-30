@@ -1,17 +1,17 @@
 // For customization, see https://containers.dev/implementors/json_reference/
 {
   "name": "AK Logistics - Full Stack",
+  "workspaceFolder": "/workspace",
 
   // Point to the root-level docker-compose
-  "dockerComposeFile": "../docker-compose.yml",
+  "dockerComposeFile": "./docker-compose.yml",
 
-  // Use any service as the "workspace" anchor — postgres is lightweight.
-  // We don't develop inside the container; we just need the DBs running.
-  "service": "courier-track-db",
-
+  // Use the workspace container as the VS Code workspace.
+  "service": "workspace",
+  "runServices": ["courier-track-db", "courier-logistics-db"],
+  "shutdownAction": "stopCompose",
   // Forward both Postgres ports to your host
   "forwardPorts": [5433, 5435],
-
   // Labels for the VS Code Ports panel
   "portsAttributes": {
     "5433": {

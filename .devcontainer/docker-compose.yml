@@ -13,7 +13,8 @@ services:
     volumes:
       - courier_track_pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB_TRACK}"]
+      test:
+        ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB_TRACK}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -32,10 +33,25 @@ services:
     volumes:
       - courier_logistics_pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB_LOGISTICS}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB_LOGISTICS}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  workspace:
+    image: mcr.microsoft.com/devcontainers/typescript-node:1-22
+    container_name: ak-workspace
+    volumes:
+      - ..:/workspace:cached
+    working_dir: /workspace
+    depends_on:
+      - courier-track-db
+      - courier-logistics-db
+    command: sleep infinity
 
 volumes:
   courier_track_pgdata:
