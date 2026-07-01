@@ -4,7 +4,7 @@
   "workspaceFolder": "/workspace",
 
   // Point to the root-level docker-compose
-  "dockerComposeFile": "./docker-compose.yml",
+  "dockerComposeFile": "../docker-compose.yml",
 
   // Use the workspace container as the VS Code workspace.
   "service": "workspace",

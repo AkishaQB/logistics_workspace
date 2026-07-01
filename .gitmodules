@@ -7,3 +7,6 @@
 [submodule "courier-logistics-be"]
 	path = courier-logistics-be
 	url = https://github.com/AkishaQB/courier-logistics-be.git
+[submodule "courier-logistics-fe"]
+	path = courier-logistics-fe
+	url = https://github.com/AkishaQB/courier-logistics-fe.git
