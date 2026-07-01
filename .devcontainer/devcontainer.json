@@ -7,25 +7,60 @@
   "dockerComposeFile": "../docker-compose.yml",
 
   // Use the workspace container as the VS Code workspace.
-  "service": "workspace",
-  "runServices": ["courier-track-db", "courier-logistics-db"],
+  "service": "courier-track-be",
+  "runServices": [
+    "courier-track-db",
+    "courier-logistics-db",
+    "courier-track-be",
+    "courier-logistics-be",
+    "courier-collection-fe",
+    "courier-logistics-fe",
+    "prisma-studio-track",
+    "prisma-studio-logistics"
+  ],
   "shutdownAction": "stopCompose",
-  // Forward both Postgres ports to your host
-  "forwardPorts": [5433, 5435],
+
+  // Forward all ports to your host
+  "forwardPorts": [5433, 5435, 3001, 3002, 5173, 5175, 5555, 5556],
+
   // Labels for the VS Code Ports panel
   "portsAttributes": {
     "5433": {
-      "label": "PostgreSQL – courier-track-be",
+      "label": "PostgreSQL – courier-track-db",
       "onAutoForward": "silent"
     },
     "5435": {
-      "label": "PostgreSQL – courier-logistics-be",
+      "label": "PostgreSQL – courier-logistics-db",
       "onAutoForward": "silent"
+    },
+    "3001": {
+      "label": "courier-track-be",
+      "onAutoForward": "notify"
+    },
+    "3002": {
+      "label": "courier-logistics-be",
+      "onAutoForward": "notify"
+    },
+    "5173": {
+      "label": "courier-collection-fe",
+      "onAutoForward": "openBrowser"
+    },
+    "5175": {
+      "label": "courier-logistics-fe",
+      "onAutoForward": "openBrowser"
+    },
+    "5555": {
+      "label": "Prisma Studio – track-be",
+      "onAutoForward": "notify"
+    },
+    "5556": {
+      "label": "Prisma Studio – logistics-be",
+      "onAutoForward": "notify"
     }
   },
 
   // Run after container is created
-  "postCreateCommand": "echo '✅ courier-track-db on localhost:5433 | courier-logistics-db on localhost:5435'",
+  "postCreateCommand": "echo '✅ Full stack running — DBs: 5433/5435 | BEs: 3001/3002 | FEs: 5173/5175 | Prisma Studio: 5555/5556'",
 
   // VS Code extensions installed in every workspace opened with this devcontainer
   "customizations": {

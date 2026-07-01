@@ -1,5 +1,8 @@
 services:
-  # ─── Stage 1: Courier Track / Collection ────────────────────────────────────
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # DATABASES
+  # ═══════════════════════════════════════════════════════════════════════════════
+
   courier-track-db:
     image: postgres:16-alpine
     container_name: ak-courier-track-db
@@ -19,7 +22,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # ─── Stage 2: Courier Logistics BE ──────────────────────────────────────────
   courier-logistics-db:
     image: postgres:16-alpine
     container_name: ak-courier-logistics-db
@@ -34,22 +36,150 @@ services:
       - courier_logistics_pgdata:/var/lib/postgresql/data
     healthcheck:
       test:
-        ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB_LOGISTICS}"]
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB_LOGISTICS}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  workspace:
-    image: mcr.microsoft.com/devcontainers/typescript-node:1-22
-    container_name: ak-workspace
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # BACKENDS
+  # ═══════════════════════════════════════════════════════════════════════════════
+
+  courier-track-be:
+    container_name: ak-courier-track-be
+    build:
+      context: ./courier-track-be
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
     volumes:
-      - ..:/workspace:cached
-    working_dir: /workspace
+      - ./courier-track-be/src:/app/src
+      - ./courier-track-be/prisma:/app/prisma
+      - track_be_node_modules:/app/node_modules
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@courier-track-db:5432/${POSTGRES_DB_TRACK}"
+      DB_HOST: courier-track-db
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: ${POSTGRES_DB_TRACK}
+      JWT_SECRET: ${JWT_SECRET:-courier-track-dev-secret-key}
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:-courier-webhook-dev-secret-2026}
+      COURIER_LOGISTICS_WEBHOOK_URL: http://courier-logistics-be:3002/api/packages/webhook
+      PORT: 3001
     depends_on:
-      - courier-track-db
-      - courier-logistics-db
-    command: sleep infinity
+      courier-track-db:
+        condition: service_healthy
+
+  courier-logistics-be:
+    container_name: ak-courier-logistics-be
+    build:
+      context: ./courier-logistics-be
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./courier-logistics-be/src:/app/src
+      - ./courier-logistics-be/prisma:/app/prisma
+      - logistics_be_node_modules:/app/node_modules
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@courier-logistics-db:5432/${POSTGRES_DB_LOGISTICS}"
+      DB_HOST: courier-logistics-db
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_NAME: ${POSTGRES_DB_LOGISTICS}
+      JWT_SECRET: ${JWT_SECRET:-courier-track-dev-secret-key}
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:-courier-webhook-dev-secret-2026}
+      TRACK_BE_WEBHOOK_URL: http://courier-track-be:3001/api/webhooks/package-status
+      TRACK_BE_RAW_UPDATES_URL: http://courier-track-be:3001/api/internal/raw-updates
+      PORT: 3002
+    depends_on:
+      courier-logistics-db:
+        condition: service_healthy
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # FRONTENDS
+  # ═══════════════════════════════════════════════════════════════════════════════
+
+  courier-collection-fe:
+    container_name: ak-courier-collection-fe
+    build:
+      context: ./courier-collection-fe
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./courier-collection-fe/src:/app/src
+      - ./courier-collection-fe/public:/app/public
+      - ./courier-collection-fe/index.html:/app/index.html
+      - collection_fe_node_modules:/app/node_modules
+    environment:
+      VITE_API_BASE_URL: http://localhost:3001/
+    depends_on:
+      - courier-track-be
+
+  courier-logistics-fe:
+    container_name: ak-courier-logistics-fe
+    build:
+      context: ./courier-logistics-fe
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "5175:5175"
+    volumes:
+      - ./courier-logistics-fe/src:/app/src
+      - ./courier-logistics-fe/public:/app/public
+      - ./courier-logistics-fe/index.html:/app/index.html
+      - logistics_fe_node_modules:/app/node_modules
+    environment:
+      VITE_API_BASE_URL: http://localhost:3002/
+      VITE_AUTH_API_BASE_URL: http://localhost:3001/
+    depends_on:
+      - courier-logistics-be
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # PRISMA STUDIO
+  # ═══════════════════════════════════════════════════════════════════════════════
+
+  prisma-studio-track:
+    container_name: ak-prisma-studio-track
+    build:
+      context: ./courier-track-be
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "5555:5555"
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@courier-track-db:5432/${POSTGRES_DB_TRACK}"
+    command: npx prisma studio --port 5555 --browser none --hostname 0.0.0.0
+    depends_on:
+      courier-track-db:
+        condition: service_healthy
+
+  prisma-studio-logistics:
+    container_name: ak-prisma-studio-logistics
+    build:
+      context: ./courier-logistics-be
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "5556:5556"
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@courier-logistics-db:5432/${POSTGRES_DB_LOGISTICS}"
+    command: npx prisma studio --port 5556 --browser none --hostname 0.0.0.0
+    depends_on:
+      courier-logistics-db:
+        condition: service_healthy
 
 volumes:
   courier_track_pgdata:
   courier_logistics_pgdata:
+  track_be_node_modules:
+  logistics_be_node_modules:
+  collection_fe_node_modules:
+  logistics_fe_node_modules:

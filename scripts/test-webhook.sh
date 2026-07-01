@@ -8,7 +8,7 @@
 #
 # Prerequisites:
 #   - Both backends running:
-#       courier-track-be    on http://localhost:3000
+#       courier-track-be    on http://localhost:3001
 #       courier-logistics-be on http://localhost:3002
 #   - Both DBs seeded (regions + users exist)
 #   - jq installed: sudo apt install jq / brew install jq
@@ -22,7 +22,7 @@ set -euo pipefail
 
 # ─── Config ──────────────────────────────────────────────────────────────────
 
-TRACK_URL="http://localhost:3000"
+TRACK_URL="http://localhost:3001"
 LOGISTICS_URL="http://localhost:3002"
 
 # Seeded credentials (from courier-track-be/prisma/seed.ts)
